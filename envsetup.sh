@@ -4,6 +4,7 @@ Invoke ". build/envsetup.sh" from your shell to add the following functions to y
 - lunch:    lunch <product_name>-<build_variant>
 - tapas:    tapas [<App1> <App2> ...] [arm|x86|mips] [eng|userdebug|user]
 - croot:    Changes directory to the top of the tree.
+- groot:    Changes directory to the root of the git project.
 - m:        Makes from the top of the tree.
 - mm:       Builds all of the modules in the current directory.
 - mmm:      Builds all of the modules in the supplied directories.
@@ -237,17 +238,17 @@ function settitle()
 
 function addcompletions()
 {
-    local T dir f
-
     # Keep us from trying to run in something that isn't bash.
     if [ -z "${BASH_VERSION}" ]; then
         return
     fi
 
     # Keep us from trying to run in bash that's too old.
-    if [ ${BASH_VERSINFO[0]} -lt 3 ]; then
+    if [ "${BASH_VERSINFO[0]}" -lt 4 ] ; then
         return
     fi
+
+    local T dir f
 
     dir="sdk/bash_completion"
     if [ -d ${dir} ]; then
@@ -809,6 +810,16 @@ function croot()
     fi
 }
 
+function groot()
+{
+    T=$(git rev-parse --show-cdup)
+    if [ "$T" ]; then
+        cd $(git rev-parse --show-cdup)
+    else
+        echo "Already at the root of the git project."
+    fi
+}
+
 function cproj()
 {
     TOPFILE=build/core/envsetup.mk
@@ -1304,7 +1315,7 @@ function pstest() {
         echo "to use: pstest PATCH_ID/PATCH_SET"
         echo "example: pstest 5555/5"
     else
-        gerrit=gerrit.sudoservers.com
+        gerrit=gerrit.aokp.co
         project=`git config --get remote.aokp.projectname`
         patch="$1"
         submission=`echo $patch | cut -f1 -d "/" | tail -c 3`
